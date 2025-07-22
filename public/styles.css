@@ -1,0 +1,192 @@
+/* Global Reset and Font */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #2b3c55; /* Updated theme color */
+  color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Centered container */
+.container {
+  max-width: 900px;
+  width: 90%;
+  margin-top: 40px;
+  text-align: center;
+}
+
+/* Headings */
+h1, h2 {
+  color: #f5f5f5;
+  margin-bottom: 20px;
+}
+
+/* Styled table */
+.styled-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 25px 0;
+  font-size: 0.9em;
+  background-color: #fff;
+  color: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.styled-table thead tr {
+  background-color: #2b3c55;
+  color: #f5f5f5;
+  text-align: left;
+}
+
+.styled-table th, .styled-table td {
+  padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid #2b3c55;
+}
+
+.styled-table tbody tr.active-row {
+  font-weight: bold;
+  color: #2b3c55;
+}
+
+/* Buttons */
+button {
+  background-color: #C69F5B; /* Updated matte gold */
+  color: #2b3c55;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin: 10px 5px;
+}
+
+button:hover {
+  background-color: #b78e4e;
+}
+
+/* Inputs and selects */
+input[type="file"],
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+/* Horizontal form layout for login/register */
+form label {
+  display: inline-block;
+  width: 140px;
+  text-align: right;
+  margin-right: 10px;
+  font-weight: bold;
+  color: #f5f5f5;
+}
+
+form input {
+  display: inline-block;
+  width: 60%;
+  max-width: 300px;
+}
+
+form div.form-group {
+  margin: 10px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Fund selector section */
+#fundSelectorSection {
+  margin-top: 20px;
+  text-align: left;
+  width: 100%;
+  max-width: 800px;
+}
+
+/* Links */
+a {
+  color: #C69F5B;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Logout button positioning */
+form[action="/logout"] {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+/* Card-style form container */
+.card {
+  background-color: #3b4c68; /* Slightly lighter than #2b3c55 for contrast */
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 450px;
+  margin-top: 60px;
+  text-align: left;
+}
+
+/* Form labels and inputs inside card */
+.card .form-group {
+  margin: 15px 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.card .form-group label {
+  width: 130px;
+  margin-right: 10px;
+}
+
+.card .form-group input {
+  width: 100%;
+  max-width: 240px;
+}
+
+.card h2 {
+  text-align: center;
+  color: #f5f5f5;
+}
+.logo-container {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.logo-image {
+  max-width: 180px;
+  height: auto;
+  border-radius: 10px; 
+}

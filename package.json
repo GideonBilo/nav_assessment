@@ -1,0 +1,23 @@
+{
+  "name": "nav-assessment",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "multer": "^2.0.1",
+    "mysql2": "^3.14.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4"
+  }
+}

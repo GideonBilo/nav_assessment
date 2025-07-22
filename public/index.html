@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NAV System</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Top-right Logout Button -->
+  <form action="/logout" method="GET" style="position: absolute; top: 20px; right: 20px;">
+    <button type="submit">Logout</button>
+  </form>
+
+  <h1>The CATALYST Group NAV System</h1>
+  <p><strong><em><u>DATA THAT INSPIRES PEOPLE...BECAUSE WE DO THINGS DIFFERENTLY AND BETTER</u></em></strong></p>
+
+  <div>
+    <button onclick="showUpload()">Upload Data</button>
+    <button onclick="viewData()">View Existing Data</button>
+  </div>
+
+  <!-- Upload Form (Initially Hidden) -->
+  <div id="uploadSection" style="display: none; margin-top: 20px;">
+    <form id="uploadForm">
+      <input type="file" name="excelFile" accept=".xlsx, .xls" required />
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- Rows-per-page Selector -->
+  <div id="controls" style="display: none;">
+    <label for="rowsPerPage">Rows per page:</label>
+    <select id="rowsPerPage">
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+    </select>
+  </div>
+
+  <!-- Data Display Section -->
+  <div id="dataSection" style="display: none;">
+    <div id="tableContainer"></div>
+
+    <!-- Fund Selector Moved Below Table -->
+    <div id="fundSelectorSection" style="margin-top: 20px;">
+      <label for="fundSelector">Select Fund(s):</label>
+      <select id="fundSelector" multiple size="5"></select>
+    </div>
+
+    <h2>NAV Chart</h2>
+    <canvas id="navChart" width="800" height="400"></canvas>
+
+    <h2>NAV Distribution (Pie Chart)</h2>
+    <canvas id="navPieChart" width="400" height="400"></canvas>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const tableContainer = document.getElementById("tableContainer");
+    const rowsPerPageSelector = document.getElementById("rowsPerPage");
+    const fundSelector = document.getElementById("fundSelector");
+    const uploadSection = document.getElementById("uploadSection");
+    const dataSection = document.getElementById("dataSection");
+    const controls = document.getElementById("controls");
+
+    let navChart;
+    let navPieChart;
+
+    function showUpload() {
+      uploadSection.style.display = "block";
+      dataSection.style.display = "none";
+      controls.style.display = "none";
+    }
+
+    function viewData() {
+      uploadSection.style.display = "none";
+      controls.style.display = "block";
+      dataSection.style.display = "block";
+      loadExistingData();
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const response = await fetch("/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      controls.style.display = "block";
+      dataSection.style.display = "block";
+      displayTable(data);
+      displayChart(data);
+    });
+
+    async function loadExistingData() {
+      const response = await fetch("/data");
+      const data = await response.json();
+      displayTable(data);
+      displayChart(data);
+    }
+
+    function displayTable(data) {
+      let currentPage = 1;
+      let rowsPerPage = parseInt(rowsPerPageSelector.value);
+
+      const uniqueCompanies = [...new Set(data.map(row => row["Company"]))];
+      const uniqueFunds = [...new Set(data.map(row => row["Fund"]))];
+      let selectedCompany = "All";
+      let selectedFund = "All";
+
+      rowsPerPageSelector.addEventListener("change", () => {
+        rowsPerPage = parseInt(rowsPerPageSelector.value);
+        currentPage = 1;
+        renderTable();
+      });
+
+      function renderTable() {
+        const filtered = data.filter(row => {
+          return (selectedCompany === "All" || row["Company"] === selectedCompany) &&
+                 (selectedFund === "All" || row["Fund"] === selectedFund);
+        });
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedData = filtered.slice(start, end);
+
+        let table = `<table class="styled-table"><thead><tr>
+          <th>
+            Company<br>
+            <select id="companyFilter">
+              <option value="All">All</option>
+              ${uniqueCompanies.map(c => `<option value="${c}">${c}</option>`).join("")}
+            </select>
+          </th>
+          <th>
+            Fund<br>
+            <select id="fundFilter">
+              <option value="All">All</option>
+              ${uniqueFunds.map(f => `<option value="${f}">${f}</option>`).join("")}
+            </select>
+          </th>
+          <th>NAV Date</th>
+          <th>Nav Value</th>
+        </tr></thead><tbody>`;
+
+        paginatedData.forEach(row => {
+          table += `<tr>
+            <td>${row["Company"]}</td>
+            <td>${row["Fund"]}</td>
+            <td>${row["NAV Date"]}</td>
+            <td>${row["Nav Value"]}</td>
+          </tr>`;
+        });
+
+        table += "</tbody></table>";
+
+        const totalPages = Math.ceil(filtered.length / rowsPerPage);
+        let pagination = `<div style="margin-top: 10px;">Page: `;
+        for (let i = 1; i <= totalPages; i++) {
+          pagination += `<button onclick="goToPage(${i})">${i}</button> `;
+        }
+        pagination += "</div>";
+
+        tableContainer.innerHTML = table + pagination;
+
+        document.getElementById("companyFilter").value = selectedCompany;
+        document.getElementById("fundFilter").value = selectedFund;
+
+        document.getElementById("companyFilter").addEventListener("change", (e) => {
+          selectedCompany = e.target.value;
+          currentPage = 1;
+          renderTable();
+        });
+
+        document.getElementById("fundFilter").addEventListener("change", (e) => {
+          selectedFund = e.target.value;
+          currentPage = 1;
+          renderTable();
+        });
+      }
+
+      window.goToPage = (page) => {
+        currentPage = page;
+        renderTable();
+      };
+
+      renderTable();
+    }
+
+    function displayChart(data) {
+      const ctx = document.getElementById("navChart").getContext("2d");
+      const grouped = {};
+      const labelsSet = new Set();
+
+      data.forEach(row => {
+        const fund = row["Fund"] || row["fund"];
+        const date = row["NAV Date"] || row["nav_date"];
+        const value = row["Nav Value"] || row["nav_value"];
+
+        if (!grouped[fund]) grouped[fund] = [];
+        grouped[fund].push({ date, value });
+        labelsSet.add(date);
+      });
+
+      const allFunds = Object.keys(grouped);
+      fundSelector.innerHTML = "";
+      allFunds.forEach(fund => {
+        const option = document.createElement("option");
+        option.value = fund;
+        option.textContent = fund;
+        if (fund === "Hedge A1") option.selected = true;
+        fundSelector.appendChild(option);
+      });
+
+      function renderChart(selectedFunds) {
+        if (navChart) navChart.destroy();
+
+        const datasets = selectedFunds.map(fund => {
+          const sorted = grouped[fund].sort((a, b) => new Date(a.date) - new Date(b.date));
+          return {
+            label: fund,
+            data: sorted.map(e => e.value),
+            borderColor: getRandomColor(),
+            fill: false,
+            tension: 0.1
+          };
+        });
+
+        navChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: Array.from(labelsSet).sort((a, b) => new Date(a) - new Date(b)),
+            datasets,
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "top" },
+              title: { display: true, text: "NAV Value Over Time by Fund" }
+            }
+          }
+        });
+
+        renderPieChart(selectedFunds);
+      }
+
+      function renderPieChart(selectedFunds) {
+        if (navPieChart) navPieChart.destroy();
+
+        const pieData = selectedFunds.map(fund => {
+          const total = grouped[fund].reduce((sum, entry) => sum + parseFloat(entry.value), 0);
+          return total;
+        });
+
+        navPieChart = new Chart(document.getElementById("navPieChart"), {
+          type: "pie",
+          data: {
+            labels: selectedFunds,
+            datasets: [{
+              label: "Total NAV",
+              data: pieData,
+              backgroundColor: selectedFunds.map(() => getRandomColor())
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "right" },
+              title: { display: true, text: "Total NAV Value by Fund" }
+            }
+          }
+        });
+      }
+
+      const initiallySelected = Array.from(fundSelector.selectedOptions).map(opt => opt.value);
+      renderChart(initiallySelected);
+
+      fundSelector.addEventListener("change", () => {
+        const selected = Array.from(fundSelector.selectedOptions).map(opt => opt.value);
+        renderChart(selected);
+        renderPieChart(selected);
+      });
+    }
+
+    function getRandomColor() {
+      const r = () => Math.floor(Math.random() * 256);
+      return `rgb(${r()}, ${r()}, ${r()})`;
+    }
+  </script>
+
+</body>
+</html>
