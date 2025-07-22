@@ -1,0 +1,18 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Environment files (if you use them later)
+.env
+
+# Mac system files
+.DS_Store
+
+# Uploaded Excel files
+uploads/
+
+# Build artifacts or temp files
+*.tmp
